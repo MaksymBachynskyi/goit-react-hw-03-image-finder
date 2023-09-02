@@ -49,7 +49,10 @@ export class App extends Component {
         page: prev.page + 1,
         error: false,
       }));
-      const items = await fetchGet(this.state.search, this.state.page);
+      const slicedSearch = this.state.search.slice(
+        this.state.search.indexOf('/') + 1
+      );
+      const items = await fetchGet(slicedSearch, this.state.page);
       this.setState(p => ({
         images: [...p.images, ...items.hits],
         total: p.total - 12,
