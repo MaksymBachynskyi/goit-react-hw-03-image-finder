@@ -33,7 +33,7 @@ export const BtnStyled = styled.button`
   height: 48px;
   border: 0;
 
-  opacity: 0.6;
+  opacity: 0.5;
   transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   outline: none;
