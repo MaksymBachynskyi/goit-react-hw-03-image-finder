@@ -7,7 +7,12 @@ import {
 export const Searchbar = ({ onSubmit }) => {
   return (
     <SearchBarStyled>
-      <Form onSubmit={onSubmit}>
+      <Form
+        onSubmit={event => {
+          event.preventDefault();
+          return onSubmit(event.target.elements.search.value);
+        }}
+      >
         <BtnStyled type="submit">
           <span>Search</span>
         </BtnStyled>

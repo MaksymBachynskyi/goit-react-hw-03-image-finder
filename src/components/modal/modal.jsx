@@ -3,23 +3,26 @@ import { Component } from 'react';
 import { createPortal } from 'react-dom';
 const modalRoot = document.querySelector('#modal-root');
 export class Modal extends Component {
+  onCloseKeyDown = clickedKey => {
+    if (clickedKey.code === 'Escape') {
+      this.props.onCloseModalEscape();
+    }
+  };
   componentDidMount() {
-    window.addEventListener('keydown', clickedKey => {
-      if (clickedKey.code === 'Escape') {
-        this.props.onCloseModalEscape();
-      }
-    });
+    window.addEventListener('keydown', this.onCloseKeyDown);
   }
   componentWillUnmount() {
-    window.removeEventListener('keydown', clickedKey => {
-      if (clickedKey.code === 'Escape') {
-        this.props.onCloseModalEscape();
-      }
-    });
+    window.removeEventListener('keydown', this.onCloseKeyDown);
   }
   render() {
     return createPortal(
-      <Overlay onClick={this.props.closeModal}>
+      <Overlay
+        onClick={overlay => {
+          if (overlay.target === overlay.currentTarget) {
+            return this.props.closeModal();
+          }
+        }}
+      >
         <StyledModal>
           <img src={this.props.imgLarge} alt="" />
         </StyledModal>

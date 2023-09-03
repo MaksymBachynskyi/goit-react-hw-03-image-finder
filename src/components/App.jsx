@@ -1,12 +1,11 @@
 import { Searchbar } from './searchbar/searchbar';
 import { ImageGallery } from './imageGallery/imagegallery';
-import { GlobalStyle } from 'globalStyle';
 import { Component } from 'react';
 import { fetchGet } from 'fetch';
 import { Button } from './button/button';
 import { Modal } from './modal/modal';
 import { Circles } from 'react-loader-spinner';
-import toast, { Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 export class App extends Component {
   state = {
     search: '',
@@ -18,17 +17,20 @@ export class App extends Component {
     largeImage: '',
   };
   async componentDidUpdate(prevProps, prevState) {
-    if (prevState.search !== this.state.search) {
+    if (
+      prevState.search !== this.state.search ||
+      prevState.page !== this.state.page
+    ) {
       try {
-        this.setState({ loader: true, page: 1, error: false });
         const slicedSearch = this.state.search.slice(
           this.state.search.indexOf('/') + 1
         );
-        const items = await fetchGet(slicedSearch);
-        this.setState({
-          images: [...items.hits],
+        this.setState({ loader: true });
+        const items = await fetchGet(slicedSearch, this.state.page);
+        this.setState(prevState => ({
+          images: [...prevState.images, ...items.hits],
           total: items.total,
-        });
+        }));
       } catch (error) {
         this.setState({ error: true });
       } finally {
@@ -36,32 +38,21 @@ export class App extends Component {
       }
     }
   }
-  onSearch = inputTarget => {
-    inputTarget.preventDefault();
+  onSearch = searchWord => {
     this.setState({
-      search: `${Date.now()}/${inputTarget.target.elements.search.value}`,
+      search: `${Date.now()}/${searchWord}`,
+      page: 1,
+      loader: false,
+      images: [],
+      total: 0,
+      largeImage: '',
+      error: false,
     });
   };
   onLoadMore = async () => {
-    try {
-      await this.setState(prev => ({
-        loader: true,
-        page: prev.page + 1,
-        error: false,
-      }));
-      const slicedSearch = this.state.search.slice(
-        this.state.search.indexOf('/') + 1
-      );
-      const items = await fetchGet(slicedSearch, this.state.page);
-      this.setState(p => ({
-        images: [...p.images, ...items.hits],
-        total: p.total - 12,
-      }));
-    } catch (error) {
-      this.setState({ error: true });
-    } finally {
-      this.setState({ loader: false });
-    }
+    this.setState(prev => ({
+      page: prev.page + 1,
+    }));
   };
   onOpenModal = clickedImg => {
     this.setState({
@@ -69,11 +60,9 @@ export class App extends Component {
     });
   };
   onCloseModal = overlay => {
-    if (overlay.target === overlay.currentTarget) {
-      this.setState({
-        largeImage: '',
-      });
-    }
+    this.setState({
+      largeImage: '',
+    });
   };
   onCloseModalEscape = () => {
     this.setState({
@@ -84,24 +73,14 @@ export class App extends Component {
     return (
       <div>
         <Searchbar onSubmit={this.onSearch} />
-        {this.state.loader && (
-          <Circles
-            height="80"
-            width="80"
-            color="#4fa94d"
-            ariaLabel="circles-loading"
-            wrapperStyle={{}}
-            wrapperClass=""
-            visible={true}
-          />
-        )}
+        {this.state.loader && <Circles />}
         {this.state.images.length > 0 && (
           <ImageGallery
             images={this.state.images}
             onOpenModal={this.onOpenModal}
           />
         )}
-        {this.state.total > 12 && (
+        {this.state.total / 12 > Math.ceil(this.state.page) && (
           <Button onLoadMore={this.onLoadMore}>Load More</Button>
         )}
         {this.state.largeImage && (
@@ -112,8 +91,6 @@ export class App extends Component {
           />
         )}
         {this.state.error && toast.error('Something Went Wrong')}
-        <Toaster position="top-right" />
-        <GlobalStyle />
       </div>
     );
   }
