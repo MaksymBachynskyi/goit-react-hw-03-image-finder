@@ -4,7 +4,7 @@ import { Component } from 'react';
 import { fetchGet } from 'fetch';
 import { Button } from './button/button';
 import { Modal } from './modal/modal';
-import { Circles } from 'react-loader-spinner';
+import { Loader } from './loader';
 import { toast } from 'react-hot-toast';
 export class App extends Component {
   state = {
@@ -64,16 +64,12 @@ export class App extends Component {
       largeImage: '',
     });
   };
-  onCloseModalEscape = () => {
-    this.setState({
-      largeImage: '',
-    });
-  };
+
   render() {
     return (
       <div>
         <Searchbar onSubmit={this.onSearch} />
-        {this.state.loader && <Circles />}
+        {this.state.loader && <Loader />}
         {this.state.images.length > 0 && (
           <ImageGallery
             images={this.state.images}
